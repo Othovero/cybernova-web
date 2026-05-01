@@ -194,42 +194,79 @@ export function AnalyticsDashboard({ tickets }: Props) {
         import("jspdf"),
         import("html2canvas"),
       ]);
+
+      // Pre-fetch logo as data URL
+      let logoDataUrl: string | null = null;
+      try {
+        const res = await fetch("/logotransparent.png");
+        const blob = await res.blob();
+        logoDataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } catch { /* fall back to text header */ }
+
       const doc = new jsPDF({ unit: "mm", format: "a4" });
       const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
       const margin = 15;
       let y = margin;
 
-      // Header bar
+      // ── Header bar ─────────────────────────────────────────────────────────────
       doc.setFillColor(11, 31, 58);
-      doc.rect(0, 0, pageW, 22, "F");
+      doc.rect(0, 0, pageW, 24, "F");
+
+      if (logoDataUrl) {
+        // Logo: proportional height ~11mm (native 118×34 → ~38×11mm)
+        const logoH = 11;
+        const logoW = (118 / 34) * logoH;
+        doc.addImage(logoDataUrl, "PNG", margin, (24 - logoH) / 2, logoW, logoH);
+      } else {
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(13);
+        doc.setFont("helvetica", "bold");
+        doc.text("CyberNova Analytics", margin, 15);
+      }
+
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(13);
+      doc.setFontSize(10);
       doc.setFont("helvetica", "bold");
-      doc.text("CyberNova Analytics", margin, 14);
-      doc.setFontSize(9);
+      doc.text("AI Security Report", pageW - margin, 13, { align: "right" });
+      doc.setFontSize(8);
       doc.setFont("helvetica", "normal");
-      doc.text("AI Security Report", pageW - margin, 14, { align: "right" });
-      y = 30;
+      doc.setTextColor(148, 163, 184);
+      doc.text("CyberNova Analytics Ltd — Gaborone, Botswana", pageW - margin, 19, { align: "right" });
 
-      // Sub-header
+      y = 32;
+
+      // ── Sub-header metadata ────────────────────────────────────────────────────
+      doc.setFontSize(8.5);
       doc.setTextColor(100, 116, 139);
-      doc.setFontSize(9);
       doc.text(filterLabel ? `Filter: ${filterLabel}` : "Scope: All Incidents", margin, y);
-      doc.text(new Date().toLocaleDateString("en-GB"), pageW - margin, y, { align: "right" });
-      y += 8;
+      doc.text(
+        `Student: BJ11DW  ·  ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`,
+        pageW - margin, y, { align: "right" }
+      );
+      y += 5;
+      doc.setDrawColor(226, 232, 240);
+      doc.line(margin, y, pageW - margin, y);
+      y += 7;
 
-      // Charts screenshot
+      // ── Charts screenshot ──────────────────────────────────────────────────────
       if (chartsRef.current) {
         const canvas = await html2canvas(chartsRef.current, {
           scale: 1.5, useCORS: true, backgroundColor: "#ffffff",
         });
         const imgW = pageW - margin * 2;
         const imgH = (canvas.height / canvas.width) * imgW;
-        doc.addImage(canvas.toDataURL("image/png"), "PNG", margin, y, imgW, Math.min(imgH, 90));
-        y += Math.min(imgH, 90) + 8;
+        const clampedH = Math.min(imgH, 88);
+        doc.addImage(canvas.toDataURL("image/png"), "PNG", margin, y, imgW, clampedH);
+        y += clampedH + 8;
       }
 
-      // Divider + section heading
+      // ── AI Analysis section ────────────────────────────────────────────────────
       doc.setDrawColor(226, 232, 240);
       doc.line(margin, y, pageW - margin, y);
       y += 6;
@@ -239,7 +276,6 @@ export function AnalyticsDashboard({ tickets }: Props) {
       doc.text("AI Analysis", margin, y);
       y += 6;
 
-      // Report text (strip markdown for plain PDF rendering)
       if (reportText) {
         const plain = reportText
           .replace(/^#{1,3}\s+/gm, "")
@@ -250,11 +286,26 @@ export function AnalyticsDashboard({ tickets }: Props) {
         doc.setTextColor(30, 30, 30);
         const splitLines = doc.splitTextToSize(plain, pageW - margin * 2) as string[];
         splitLines.forEach((line) => {
-          if (y > 280) { doc.addPage(); y = margin; }
+          if (y > 278) {
+            // Footer on current page before adding new one
+            doc.setFontSize(7.5);
+            doc.setTextColor(148, 163, 184);
+            doc.text("CyberNova Analytics Ltd  ·  Student: BJ11DW  ·  Confidential", pageW / 2, pageH - 8, { align: "center" });
+            doc.addPage();
+            y = margin;
+            doc.setFontSize(9);
+            doc.setTextColor(30, 30, 30);
+            doc.setFont("helvetica", "normal");
+          }
           doc.text(line, margin, y);
           y += 4.5;
         });
       }
+
+      // ── Footer on last page ────────────────────────────────────────────────────
+      doc.setFontSize(7.5);
+      doc.setTextColor(148, 163, 184);
+      doc.text("CyberNova Analytics Ltd  ·  Student: BJ11DW  ·  Confidential", pageW / 2, pageH - 8, { align: "center" });
 
       doc.save(`cybernova-report-${Date.now()}.pdf`);
     } finally {
