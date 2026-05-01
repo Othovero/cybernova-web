@@ -12,6 +12,10 @@ export const metadata: Metadata = {
   title: "CyberNova Analytics | Cybersecurity Authority for Southern Africa",
   description:
     "AI-driven cybersecurity solutions for government agencies, financial institutions, and SMEs across Southern Africa.",
+  icons: {
+    icon: "/logotransparent.png",
+    apple: "/logotransparent.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
