@@ -37,7 +37,7 @@ export function Hero() {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
         <div className="max-w-3xl">
-          <Badge className="mb-6 bg-nova-500/15 text-nova-400 border-nova-500/30 text-xs tracking-widest uppercase font-semibold">
+          <Badge className="mb-6 bg-nova-500/15 text-nova-400 border-nova-500/30 text-xs tracking-wide sm:tracking-widest uppercase font-semibold hidden sm:inline-flex">
             <ShieldCheck size={12} className="mr-1.5" />
             AI-Driven Cybersecurity &middot; Southern Africa
           </Badge>
