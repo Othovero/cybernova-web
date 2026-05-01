@@ -1,16 +1,8 @@
 import { adminClient } from "@/lib/supabase/admin";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Download } from "lucide-react";
 import TicketFilters from "@/components/admin/TicketFilters";
-
-const STATUS_BADGE: Record<string, string> = {
-  Pending:       "bg-pending/10 text-pending",
-  Assigned:      "bg-nova-100 text-nova-500",
-  "In Progress": "bg-secure/10 text-secure",
-  Resolved:      "bg-navy-100 text-navy-700",
-  Archived:      "bg-gray-100 text-gray-500",
-};
+import { TicketActions } from "@/components/admin/TicketActions";
 
 export const revalidate = 0;
 
@@ -48,7 +40,7 @@ export default async function TicketsPage({
           <p className="text-text-muted text-sm mt-1">All service requests — filter, assign, and update.</p>
         </div>
         <a
-          href={`/api/admin/tickets/export`}
+          href="/api/admin/tickets/export"
           className="inline-flex items-center gap-2 text-sm border border-border rounded-lg px-3 h-9 hover:bg-surface transition-colors"
         >
           <Download size={14} /> Export CSV
@@ -77,7 +69,7 @@ export default async function TicketsPage({
                     <td className="px-5 py-3 text-text-muted">{t.country}</td>
                     <td className="px-5 py-3 text-text-muted">{t.issue_type}</td>
                     <td className="px-5 py-3">
-                      <Badge className={`text-xs ${STATUS_BADGE[t.status] ?? ""}`}>{t.status}</Badge>
+                      <TicketActions id={t.id} currentStatus={t.status} />
                     </td>
                     <td className="px-5 py-3 text-text-muted">
                       {(() => { const p = t.profiles as unknown; return Array.isArray(p) ? (p[0] as {full_name:string}|undefined)?.full_name ?? "—" : (p as {full_name:string}|null)?.full_name ?? "—"; })()}

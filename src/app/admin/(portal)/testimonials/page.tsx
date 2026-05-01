@@ -30,7 +30,7 @@ export default async function AdminTestimonialsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-xs text-text-muted uppercase tracking-wide">
-                {["Author", "Organisation", "Rating", "Status", "Date", ""].map((h) => (
+                {["Author", "Organisation", "Quote", "Rating", "Status", "Date", ""].map((h) => (
                   <th key={h} className="text-left px-5 py-3.5 font-semibold">{h}</th>
                 ))}
               </tr>
@@ -40,6 +40,9 @@ export default async function AdminTestimonialsPage() {
                 <tr key={t.id} className="hover:bg-surface transition-colors">
                   <td className="px-5 py-3 text-navy-900 font-medium">{t.author_name}</td>
                   <td className="px-5 py-3 text-text-muted">{t.organisation}</td>
+                  <td className="px-5 py-3 text-text-muted max-w-xs">
+                    <p className="truncate text-xs italic">&ldquo;{t.quote}&rdquo;</p>
+                  </td>
                   <td className="px-5 py-3">
                     <div className="flex gap-0.5">
                       {Array.from({ length: 5 }).map((_, i) => (
@@ -59,7 +62,7 @@ export default async function AdminTestimonialsPage() {
                 </tr>
               ))}
               {(!testimonials || testimonials.length === 0) && (
-                <tr><td colSpan={6} className="px-5 py-10 text-center text-text-muted">No submissions yet.</td></tr>
+                <tr><td colSpan={7} className="px-5 py-10 text-center text-text-muted">No submissions yet.</td></tr>
               )}
             </tbody>
           </table>

@@ -2,12 +2,13 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Ticket, ShieldAlert, Clock, CheckCircle2, TrendingUp, ArrowRight } from "lucide-react";
 import { adminClient } from "@/lib/supabase/admin";
+import { DashboardCharts } from "@/components/admin/DashboardCharts";
 
 const STATUS_BADGE: Record<string, string> = {
   Pending:       "bg-pending/10 text-pending",
   Assigned:      "bg-nova-100 text-nova-500",
-  "In Progress": "bg-secure/10 text-secure",
-  Resolved:      "bg-navy-100 text-navy-700",
+  "In Progress": "bg-cyan-50 text-cyan-700",
+  Resolved:      "bg-secure/10 text-secure",
   Archived:      "bg-gray-100 text-gray-500",
 };
 
@@ -19,6 +20,7 @@ export default async function AdminDashboard() {
     { count: active },
     { count: resolvedWeek },
     { data: recent },
+    { data: allTickets },
   ] = await Promise.all([
     adminClient.from("tickets").select("*", { count: "exact", head: true }).neq("status", "Archived"),
     adminClient.from("tickets").select("*", { count: "exact", head: true }).in("status", ["Pending", "Assigned", "In Progress"]),
@@ -29,6 +31,9 @@ export default async function AdminDashboard() {
       .neq("status", "Archived")
       .order("created_at", { ascending: false })
       .limit(5),
+    adminClient.from("tickets")
+      .select("status, issue_type")
+      .neq("status", "Archived"),
   ]);
 
   const STATS = [
@@ -38,6 +43,20 @@ export default async function AdminDashboard() {
     { label: "Resolved This Week", value: String(resolvedWeek ?? 0),  icon: CheckCircle2, color: "text-secure",   bg: "bg-secure/10" },
   ];
 
+  // Build chart data
+  const statusMap: Record<string, number> = {};
+  const issueMap:  Record<string, number> = {};
+  for (const t of allTickets ?? []) {
+    statusMap[t.status]     = (statusMap[t.status]     || 0) + 1;
+    issueMap[t.issue_type]  = (issueMap[t.issue_type]  || 0) + 1;
+  }
+
+  const statusData = Object.entries(statusMap).map(([status, count]) => ({ status, count }));
+  const issueData  = Object.entries(issueMap)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([issue, count]) => ({ issue, count }));
+
   return (
     <div className="space-y-6">
       <div>
@@ -45,6 +64,7 @@ export default async function AdminDashboard() {
         <p className="text-text-muted text-sm mt-1">Overview of all service requests and team activity.</p>
       </div>
 
+      {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {STATS.map((s) => {
           const Icon = s.icon;
@@ -62,6 +82,10 @@ export default async function AdminDashboard() {
         })}
       </div>
 
+      {/* Visual charts */}
+      <DashboardCharts statusData={statusData} issueData={issueData} />
+
+      {/* Recent tickets */}
       <Card className="border-border">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">

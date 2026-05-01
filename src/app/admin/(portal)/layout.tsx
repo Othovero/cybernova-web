@@ -5,7 +5,7 @@ import { ShieldCheck, LogOut } from "lucide-react";
 
 export const metadata: Metadata = { title: "Admin — CyberNova Analytics" };
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminPortalLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -13,7 +13,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-screen flex bg-surface">
       <AdminSidebar />
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="bg-white border-b border-border px-6 py-4 flex items-center justify-between">
+        <header className="bg-white border-b border-border px-6 py-4 flex items-center justify-between shrink-0">
           <p className="text-xs text-text-muted">
             Logged in as{" "}
             <span className="font-semibold text-navy-900">{user?.email ?? "—"}</span>
