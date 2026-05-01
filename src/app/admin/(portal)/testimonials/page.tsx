@@ -27,7 +27,8 @@ export default async function AdminTestimonialsPage() {
 
       <Card className="border-border">
         <CardContent className="pt-0 px-0">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[700px]">
             <thead>
               <tr className="border-b border-border text-xs text-text-muted uppercase tracking-wide">
                 {["Author", "Organisation", "Quote", "Rating", "Status", "Date", ""].map((h) => (
@@ -66,6 +67,7 @@ export default async function AdminTestimonialsPage() {
               )}
             </tbody>
           </table>
+          </div>
         </CardContent>
       </Card>
     </div>

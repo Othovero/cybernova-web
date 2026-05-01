@@ -434,15 +434,15 @@ export function AnalyticsDashboard({ tickets }: Props) {
       )}
 
       {/* Drilldown table */}
-      <div className="bg-white border border-border rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-          <div>
-            <p className="text-sm font-bold text-navy-900">
+      <div className="bg-white border border-border rounded-xl overflow-hidden min-w-0">
+        <div className="px-4 sm:px-5 py-4 border-b border-border flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-navy-900 truncate">
               {filter ? `Tickets — ${filterLabel}` : "All Tickets"}
             </p>
             <p className="text-xs text-text-muted mt-0.5">{filtered.length} record{filtered.length !== 1 ? "s" : ""}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => downloadText(buildCsv(filtered), `cybernova-${filter?.value ?? "all"}-${Date.now()}.csv`, "text/csv")}
               className="inline-flex items-center gap-1.5 text-xs border border-border rounded-lg px-3 h-8 hover:bg-surface transition-colors"
@@ -458,7 +458,7 @@ export function AnalyticsDashboard({ tickets }: Props) {
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm min-w-[600px]">
             <thead>
               <tr className="border-b border-border text-xs text-text-muted uppercase tracking-wide bg-surface">
                 {["Ref", "Name", "Organisation", "Country", "Issue Type", "Status", "Date"].map((h) => (

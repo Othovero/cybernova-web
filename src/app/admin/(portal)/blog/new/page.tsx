@@ -86,7 +86,7 @@ export default function NewBlogPostPage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="author_name">Author *</Label>
                 <Input
@@ -108,7 +108,7 @@ export default function NewBlogPostPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="tag">Tag *</Label>
                 <select

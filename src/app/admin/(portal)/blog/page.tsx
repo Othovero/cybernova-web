@@ -34,7 +34,8 @@ export default async function AdminBlogPage() {
 
       <Card className="border-border">
         <CardContent className="pt-0 px-0">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[640px]">
             <thead>
               <tr className="border-b border-border text-xs text-text-muted uppercase tracking-wide">
                 {["Title", "Tag", "Status", "Date", "Author", ""].map((h) => (
@@ -66,6 +67,7 @@ export default async function AdminBlogPage() {
               )}
             </tbody>
           </table>
+          </div>
         </CardContent>
       </Card>
     </div>
