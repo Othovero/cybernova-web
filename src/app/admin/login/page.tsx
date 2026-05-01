@@ -7,7 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
+import Image from "next/image";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -89,8 +90,17 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-surface flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-navy-900 rounded-xl mb-4">
-            <ShieldCheck size={22} className="text-nova-400" />
+          <div className="flex justify-center mb-5">
+            <div className="bg-navy-900 rounded-xl px-5 py-3">
+              <Image
+                src="/logotransparent.png"
+                alt="CyberNova Analytics"
+                width={148}
+                height={42}
+                className="object-contain"
+                priority
+              />
+            </div>
           </div>
           <h1 className="text-2xl font-bold text-navy-900">Admin Access</h1>
           <p className="text-text-muted text-sm mt-1">CyberNova Analytics — Secure Portal</p>
