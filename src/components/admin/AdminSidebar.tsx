@@ -40,34 +40,39 @@ export function AdminSidebar() {
 
       {/* ── Header: logo + collapse toggle ── */}
       <div className="relative h-[72px] flex items-center border-b border-white/10 shrink-0 px-3 gap-2">
-        {/* Brand mark / logo */}
-        <div className={cn("flex items-center min-w-0 flex-1", collapsed && "justify-center")}>
-          {collapsed ? (
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-nova-500 select-none">
-              <span className="text-sm font-bold tracking-tight text-white">CN</span>
+        {collapsed ? (
+          /* Collapsed: only the expand icon, centred */
+          <div className="flex flex-1 items-center justify-center">
+            <button
+              onClick={() => setCollapsed(false)}
+              aria-label="Expand sidebar"
+              className="flex h-8 w-8 items-center justify-center rounded-md text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <PanelLeftOpen size={18} />
+            </button>
+          </div>
+        ) : (
+          /* Expanded: logo left, collapse icon right */
+          <>
+            <div className="flex items-center min-w-0 flex-1">
+              <Image
+                src="/logotransparent.png"
+                alt="CyberNova Analytics"
+                width={118}
+                height={34}
+                className="object-contain object-left shrink-0"
+                priority
+              />
             </div>
-          ) : (
-            <Image
-              src="/logotransparent.png"
-              alt="CyberNova Analytics"
-              width={118}
-              height={34}
-              className="object-contain object-left shrink-0"
-              priority
-            />
-          )}
-        </div>
-
-        {/* Collapse / expand button — always in the header, never overlaps nav */}
-        <button
-          onClick={() => setCollapsed((c) => !c)}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="shrink-0 flex h-7 w-7 items-center justify-center rounded-md text-white/40 hover:text-white hover:bg-white/10 transition-colors"
-        >
-          {collapsed
-            ? <PanelLeftOpen  size={16} />
-            : <PanelLeftClose size={16} />}
-        </button>
+            <button
+              onClick={() => setCollapsed(true)}
+              aria-label="Collapse sidebar"
+              className="shrink-0 flex h-7 w-7 items-center justify-center rounded-md text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <PanelLeftClose size={16} />
+            </button>
+          </>
+        )}
       </div>
 
       {/* ── Nav ── */}

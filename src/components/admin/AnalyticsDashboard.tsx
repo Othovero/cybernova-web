@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
   PieChart, Pie, Legend,
@@ -8,7 +8,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import {
   Download, FileText, Loader2, X, ChevronRight, BarChart2, Globe,
-  Copy, Check,
+  Copy, Check, FileDown,
 } from "lucide-react";
 
 export interface TicketRow {
@@ -65,12 +65,56 @@ function downloadText(content: string, filename: string, mime = "text/plain") {
   URL.revokeObjectURL(url);
 }
 
+function renderInline(text: string): React.ReactNode[] {
+  return text.split(/(\*\*[^*]+\*\*)/).map((part, i) =>
+    part.startsWith("**") && part.endsWith("**")
+      ? <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
+      : part
+  );
+}
+
+function renderMarkdown(text: string): React.ReactNode {
+  const lines = text.split("\n");
+  const nodes: React.ReactNode[] = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (line.startsWith("### ")) {
+      nodes.push(<h3 key={i} className="text-sm font-bold text-navy-900 mt-4 mb-1">{renderInline(line.slice(4))}</h3>);
+    } else if (line.startsWith("## ")) {
+      nodes.push(<h2 key={i} className="text-base font-bold text-navy-900 mt-5 mb-2 pb-1 border-b border-border">{renderInline(line.slice(3))}</h2>);
+    } else if (line.startsWith("# ")) {
+      nodes.push(<h1 key={i} className="text-lg font-bold text-navy-900 mt-5 mb-2">{renderInline(line.slice(2))}</h1>);
+    } else if (line.startsWith("- ") || line.startsWith("* ")) {
+      const items: string[] = [];
+      while (i < lines.length && (lines[i].startsWith("- ") || lines[i].startsWith("* "))) {
+        items.push(lines[i].slice(2));
+        i++;
+      }
+      nodes.push(
+        <ul key={`ul-${i}`} className="list-disc list-inside space-y-0.5 my-2 text-sm text-navy-900 leading-relaxed">
+          {items.map((item, j) => <li key={j}>{renderInline(item)}</li>)}
+        </ul>
+      );
+      continue;
+    } else if (line.trim() === "") {
+      nodes.push(<div key={i} className="h-2" />);
+    } else {
+      nodes.push(<p key={i} className="text-sm text-navy-900 leading-relaxed">{renderInline(line)}</p>);
+    }
+    i++;
+  }
+  return <div className="space-y-0.5">{nodes}</div>;
+}
+
 export function AnalyticsDashboard({ tickets }: Props) {
   const [filter, setFilter]             = useState<ActiveFilter | null>(null);
   const [reportOpen, setReportOpen]     = useState(false);
   const [reportText, setReportText]     = useState("");
   const [reportLoading, setReportLoading] = useState(false);
   const [copied, setCopied]             = useState(false);
+  const [pdfLoading, setPdfLoading]     = useState(false);
+  const chartsRef                       = useRef<HTMLDivElement>(null);
 
   // ── Aggregate data ──────────────────────────────────────────────────────────
   const allServiceData = useMemo(() =>
@@ -143,6 +187,81 @@ export function AnalyticsDashboard({ tickets }: Props) {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import("jspdf"),
+        import("html2canvas"),
+      ]);
+      const doc = new jsPDF({ unit: "mm", format: "a4" });
+      const pageW = doc.internal.pageSize.getWidth();
+      const margin = 15;
+      let y = margin;
+
+      // Header bar
+      doc.setFillColor(11, 31, 58);
+      doc.rect(0, 0, pageW, 22, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(13);
+      doc.setFont("helvetica", "bold");
+      doc.text("CyberNova Analytics", margin, 14);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text("AI Security Report", pageW - margin, 14, { align: "right" });
+      y = 30;
+
+      // Sub-header
+      doc.setTextColor(100, 116, 139);
+      doc.setFontSize(9);
+      doc.text(filterLabel ? `Filter: ${filterLabel}` : "Scope: All Incidents", margin, y);
+      doc.text(new Date().toLocaleDateString("en-GB"), pageW - margin, y, { align: "right" });
+      y += 8;
+
+      // Charts screenshot
+      if (chartsRef.current) {
+        const canvas = await html2canvas(chartsRef.current, {
+          scale: 1.5, useCORS: true, backgroundColor: "#ffffff",
+        });
+        const imgW = pageW - margin * 2;
+        const imgH = (canvas.height / canvas.width) * imgW;
+        doc.addImage(canvas.toDataURL("image/png"), "PNG", margin, y, imgW, Math.min(imgH, 90));
+        y += Math.min(imgH, 90) + 8;
+      }
+
+      // Divider + section heading
+      doc.setDrawColor(226, 232, 240);
+      doc.line(margin, y, pageW - margin, y);
+      y += 6;
+      doc.setTextColor(11, 31, 58);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("AI Analysis", margin, y);
+      y += 6;
+
+      // Report text (strip markdown for plain PDF rendering)
+      if (reportText) {
+        const plain = reportText
+          .replace(/^#{1,3}\s+/gm, "")
+          .replace(/\*\*([^*]+)\*\*/g, "$1")
+          .replace(/^[-*]\s+/gm, "• ");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(30, 30, 30);
+        const splitLines = doc.splitTextToSize(plain, pageW - margin * 2) as string[];
+        splitLines.forEach((line) => {
+          if (y > 280) { doc.addPage(); y = margin; }
+          doc.text(line, margin, y);
+          y += 4.5;
+        });
+      }
+
+      doc.save(`cybernova-report-${Date.now()}.pdf`);
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   const filterLabel = filter
     ? `${filter.type === "service" ? "Service" : "Country"}: ${filter.value}`
     : null;
@@ -165,7 +284,7 @@ export function AnalyticsDashboard({ tickets }: Props) {
       )}
 
       {/* Main charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div ref={chartsRef} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Services bar chart */}
         <div className="bg-white border border-border rounded-xl p-5">
@@ -353,8 +472,15 @@ export function AnalyticsDashboard({ tickets }: Props) {
                     </button>
                     <button
                       onClick={() => downloadText(reportText, `cybernova-report-${Date.now()}.md`)}
-                      className="inline-flex items-center gap-1.5 text-xs bg-nova-500 hover:bg-nova-400 text-white rounded-lg px-3 h-8 transition-colors">
-                      <Download size={12} /> Download .md
+                      className="inline-flex items-center gap-1.5 text-xs border border-border rounded-lg px-3 h-8 hover:bg-surface transition-colors">
+                      <Download size={12} /> .md
+                    </button>
+                    <button
+                      onClick={downloadPDF}
+                      disabled={pdfLoading}
+                      className="inline-flex items-center gap-1.5 text-xs bg-navy-900 hover:bg-navy-700 text-white rounded-lg px-3 h-8 transition-colors disabled:opacity-60">
+                      {pdfLoading ? <Loader2 size={12} className="animate-spin" /> : <FileDown size={12} />}
+                      {pdfLoading ? "Generating…" : "PDF"}
                     </button>
                   </>
                 )}
@@ -374,7 +500,7 @@ export function AnalyticsDashboard({ tickets }: Props) {
                   <p className="text-sm text-text-muted">DeepSeek is analysing {filtered.length} incident{filtered.length !== 1 ? "s" : ""}…</p>
                 </div>
               ) : (
-                <pre className="whitespace-pre-wrap text-sm text-navy-900 font-sans leading-relaxed">{reportText}</pre>
+                <div className="prose-sm max-w-none">{renderMarkdown(reportText)}</div>
               )}
             </div>
           </div>
