@@ -10,13 +10,10 @@ import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 
 const TAGS = [
   "Threat Intelligence",
-  "Incident Response",
+  "Technical",
   "Compliance",
-  "Cloud Security",
-  "Network Security",
-  "Identity & Access",
-  "Malware Analysis",
-  "Regional Security",
+  "Architecture",
+  "Awareness",
 ];
 
 export default function NewBlogPostPage() {
