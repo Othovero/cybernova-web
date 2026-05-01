@@ -1,6 +1,7 @@
+import Link from "next/link";
 import { adminClient } from "@/lib/supabase/admin";
 import { Card, CardContent } from "@/components/ui/card";
-import { Download } from "lucide-react";
+import { Download, ChevronRight } from "lucide-react";
 import TicketFilters from "@/components/admin/TicketFilters";
 import { TicketActions } from "@/components/admin/TicketActions";
 
@@ -55,7 +56,7 @@ export default async function TicketsPage({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-xs text-text-muted uppercase tracking-wide">
-                  {["Ref", "Name", "Organisation", "Country", "Issue Type", "Status", "Assigned", "Date"].map((h) => (
+                  {["Ref", "Name", "Organisation", "Country", "Issue Type", "Status", "Assigned", "Date", ""].map((h) => (
                     <th key={h} className="text-left px-5 py-3.5 font-semibold">{h}</th>
                   ))}
                 </tr>
@@ -63,7 +64,11 @@ export default async function TicketsPage({
               <tbody className="divide-y divide-border">
                 {filtered.map((t) => (
                   <tr key={t.ref} className="hover:bg-surface transition-colors">
-                    <td className="px-5 py-3 font-mono text-xs font-semibold text-navy-700">{t.ref}</td>
+                    <td className="px-5 py-3">
+                      <Link href={`/admin/tickets/${t.id}`} className="font-mono text-xs font-semibold text-nova-500 hover:underline">
+                        {t.ref}
+                      </Link>
+                    </td>
                     <td className="px-5 py-3 text-navy-900">{t.full_name}</td>
                     <td className="px-5 py-3 text-navy-900">{t.organisation}</td>
                     <td className="px-5 py-3 text-text-muted">{t.country}</td>
@@ -77,10 +82,15 @@ export default async function TicketsPage({
                     <td className="px-5 py-3 text-text-muted text-xs">
                       {new Date(t.created_at).toLocaleDateString("en-GB")}
                     </td>
+                    <td className="px-5 py-3">
+                      <Link href={`/admin/tickets/${t.id}`} className="text-text-muted hover:text-nova-500 transition-colors">
+                        <ChevronRight size={15} />
+                      </Link>
+                    </td>
                   </tr>
                 ))}
                 {filtered.length === 0 && (
-                  <tr><td colSpan={8} className="px-5 py-10 text-center text-text-muted">No tickets found.</td></tr>
+                  <tr><td colSpan={9} className="px-5 py-10 text-center text-text-muted">No tickets found.</td></tr>
                 )}
               </tbody>
             </table>
