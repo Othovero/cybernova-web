@@ -84,6 +84,11 @@ export default async function AdminDashboard() {
 
       {/* Visual charts */}
       <DashboardCharts statusData={statusData} issueData={issueData} />
+      <div className="flex justify-end">
+        <a href="/admin/analytics" className="inline-flex items-center gap-1.5 text-xs text-nova-500 hover:text-nova-400 font-semibold transition-colors">
+          View full interactive analytics <ArrowRight size={12} />
+        </a>
+      </div>
 
       {/* Recent tickets */}
       <Card className="border-border">
