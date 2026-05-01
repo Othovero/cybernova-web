@@ -2,26 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .text-balance { text-wrap: balance; }
+}
+
+@layer base {
+  :root {
+    /* shadcn/ui CSS vars — hex format for Tailwind v3 compatibility */
+    --background:          #ffffff;
+    --foreground:          #0B1F3A;
+
+    --card:                #ffffff;
+    --card-foreground:     #0B1F3A;
+
+    --popover:             #ffffff;
+    --popover-foreground:  #0B1F3A;
+
+    --primary:             #005CE6;
+    --primary-foreground:  #ffffff;
+
+    --secondary:           #F5F7FA;
+    --secondary-foreground: #0B1F3A;
+
+    --muted:               #F5F7FA;
+    --muted-foreground:    #64748B;
+
+    --accent:              #E8F0FE;
+    --accent-foreground:   #005CE6;
+
+    --destructive:         #DC2626;
+    --destructive-foreground: #ffffff;
+
+    --border:              #E2E8F0;
+    --input:               #E2E8F0;
+    --ring:                #005CE6;
+
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-navy-900 font-semibold;
   }
 }
