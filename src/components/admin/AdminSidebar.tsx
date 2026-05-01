@@ -18,11 +18,11 @@ import {
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { label: "Dashboard",    href: "/admin",               icon: LayoutDashboard },
-  { label: "Tickets",      href: "/admin/tickets",       icon: ShieldAlert     },
-  { label: "Blog",         href: "/admin/blog",          icon: FileText        },
-  { label: "Testimonials", href: "/admin/testimonials",  icon: Star            },
-  { label: "Analytics",    href: "/admin/analytics",     icon: BarChart2       },
+  { label: "Dashboard",    href: "/admin",              icon: LayoutDashboard },
+  { label: "Tickets",      href: "/admin/tickets",      icon: ShieldAlert     },
+  { label: "Blog",         href: "/admin/blog",         icon: FileText        },
+  { label: "Testimonials", href: "/admin/testimonials", icon: Star            },
+  { label: "Analytics",    href: "/admin/analytics",    icon: BarChart2       },
 ];
 
 export function AdminSidebar() {
@@ -38,32 +38,44 @@ export function AdminSidebar() {
     >
       <CircuitPattern />
 
-      {/* ── Logo header ── */}
-      <div className="relative h-[72px] flex items-center border-b border-white/10 shrink-0 px-4">
-        {collapsed ? (
-          /* Collapsed: "CN" monogram badge */
-          <div className="mx-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-nova-500 select-none">
-            <span className="text-sm font-bold tracking-tight text-white leading-none">CN</span>
-          </div>
-        ) : (
-          /* Expanded: full logo, constrained so it never overflows */
-          <div className="flex items-center gap-2.5 min-w-0">
+      {/* ── Header: logo + collapse toggle ── */}
+      <div className="relative h-[72px] flex items-center border-b border-white/10 shrink-0 px-3 gap-2">
+        {/* Brand mark / logo */}
+        <div className={cn("flex items-center min-w-0 flex-1", collapsed && "justify-center")}>
+          {collapsed ? (
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-nova-500 select-none">
+              <span className="text-sm font-bold tracking-tight text-white">CN</span>
+            </div>
+          ) : (
             <Image
               src="/logotransparent.png"
               alt="CyberNova Analytics"
-              width={120}
-              height={36}
+              width={118}
+              height={34}
               className="object-contain object-left shrink-0"
               priority
             />
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* Collapse / expand button — always in the header, never overlaps nav */}
+        <button
+          onClick={() => setCollapsed((c) => !c)}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="shrink-0 flex h-7 w-7 items-center justify-center rounded-md text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+        >
+          {collapsed
+            ? <PanelLeftOpen  size={16} />
+            : <PanelLeftClose size={16} />}
+        </button>
       </div>
 
       {/* ── Nav ── */}
       <nav className="relative flex-1 p-2 space-y-0.5 mt-1 overflow-y-auto">
         {NAV.map(({ label, href, icon: Icon }) => {
-          const active = pathname === href || (href !== "/admin" && pathname.startsWith(href));
+          const active = href === "/admin"
+            ? pathname === "/admin"
+            : pathname.startsWith(href);
           return (
             <Link
               key={href}
@@ -78,17 +90,14 @@ export function AdminSidebar() {
               )}
             >
               <Icon size={18} className="shrink-0" />
-              {!collapsed && (
-                <span className="truncate">{label}</span>
-              )}
+              {!collapsed && <span className="truncate">{label}</span>}
             </Link>
           );
         })}
       </nav>
 
-      {/* ── Bottom: collapse toggle + sign out ── */}
-      <div className="relative p-2 border-t border-white/10 space-y-0.5 shrink-0">
-        {/* Sign out */}
+      {/* ── Sign out ── */}
+      <div className="relative p-2 border-t border-white/10 shrink-0">
         <form action="/api/auth/signout" method="POST">
           <button
             type="submit"
@@ -102,22 +111,6 @@ export function AdminSidebar() {
             {!collapsed && <span>Sign Out</span>}
           </button>
         </form>
-
-        {/* Collapse toggle */}
-        <button
-          onClick={() => setCollapsed((c) => !c)}
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className={cn(
-            "flex items-center rounded-lg text-sm text-white/40 hover:text-white hover:bg-white/10 transition-colors w-full",
-            collapsed ? "justify-center p-3" : "gap-3 px-3 py-2.5"
-          )}
-        >
-          {collapsed
-            ? <PanelLeftOpen  size={17} className="shrink-0" />
-            : <PanelLeftClose size={17} className="shrink-0" />}
-          {!collapsed && <span className="text-xs">Collapse</span>}
-        </button>
       </div>
     </aside>
   );
