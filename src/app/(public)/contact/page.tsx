@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -72,10 +73,16 @@ export default function ContactPage() {
         body: JSON.stringify({ ...form, captchaToken }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error || "Submission failed. Please try again."); return; }
+      if (!res.ok) {
+        setError(data.error || "Submission failed. Please try again.");
+        toast.error("Submission failed — please try again");
+        return;
+      }
+      toast.success("Request submitted! Check your email for the tracking link.");
       setSuccess({ ref: data.ref, token: data.tracking_token });
     } catch {
       setError("Network error. Please try again.");
+      toast.error("Network error — please check your connection");
     } finally {
       setLoading(false);
     }

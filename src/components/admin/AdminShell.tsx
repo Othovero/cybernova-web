@@ -27,7 +27,7 @@ export function AdminShell({ children, userEmail }: Props) {
             className="absolute inset-0 bg-black/60"
             onClick={() => setDrawerOpen(false)}
           />
-          <div className="relative z-10 shrink-0">
+          <div className="relative z-10 shrink-0 animate-slide-left">
             <AdminSidebar />
           </div>
         </div>
@@ -52,7 +52,7 @@ export function AdminShell({ children, userEmail }: Props) {
             </span>
           </p>
         </header>
-        <main className="flex-1 p-4 sm:p-6 overflow-auto">
+        <main className="flex-1 p-4 sm:p-6 overflow-auto animate-enter">
           {children}
         </main>
       </div>

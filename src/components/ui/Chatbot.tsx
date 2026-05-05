@@ -1,9 +1,65 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { MessageCircle, X, Send, Loader2, ShieldCheck } from "lucide-react";
 
 interface Message { role: "user" | "assistant"; content: string; }
+
+const CONTACT_MARKER = "[CONTACT_FORM]";
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function formatInline(text: string): string {
+  return escapeHtml(text)
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.*?)\*/g, "<em>$1</em>")
+    .replace(/`([^`]+)`/g, '<code style="background:#f1f5f9;padding:1px 4px;border-radius:3px;font-family:monospace;font-size:11px">$1</code>');
+}
+
+function renderMarkdown(raw: string): string {
+  const lines = raw.trim().split("\n");
+  let html = "";
+  let inUl = false;
+  let inOl = false;
+
+  const closeList = () => {
+    if (inUl) { html += "</ul>"; inUl = false; }
+    if (inOl) { html += "</ol>"; inOl = false; }
+  };
+
+  for (const line of lines) {
+    const ulMatch = line.match(/^[-*•]\s+(.+)/);
+    const olMatch = line.match(/^\d+\.\s+(.+)/);
+    const headingMatch = line.match(/^#{1,3}\s+(.+)/);
+
+    if (ulMatch) {
+      if (inOl) { html += "</ol>"; inOl = false; }
+      if (!inUl) { html += '<ul style="padding-left:16px;margin:4px 0;list-style:disc">'; inUl = true; }
+      html += `<li style="margin-bottom:2px">${formatInline(ulMatch[1])}</li>`;
+    } else if (olMatch) {
+      if (inUl) { html += "</ul>"; inUl = false; }
+      if (!inOl) { html += '<ol style="padding-left:16px;margin:4px 0;list-style:decimal">'; inOl = true; }
+      html += `<li style="margin-bottom:2px">${formatInline(olMatch[1])}</li>`;
+    } else {
+      closeList();
+      if (headingMatch) {
+        html += `<strong style="display:block;margin-top:8px;margin-bottom:2px">${formatInline(headingMatch[1])}</strong>`;
+      } else if (line.trim() === "") {
+        html += '<div style="height:6px"></div>';
+      } else {
+        html += `<span style="display:block">${formatInline(line)}</span>`;
+      }
+    }
+  }
+  closeList();
+  return html;
+}
 
 export default function Chatbot() {
   const [open, setOpen]         = useState(false);
@@ -56,19 +112,38 @@ export default function Chatbot() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-surface">
-            {messages.map((m, i) => (
-              <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[85%] text-sm px-3 py-2 rounded-xl leading-relaxed ${
-                    m.role === "user"
-                      ? "bg-nova-500 text-white rounded-br-sm"
-                      : "bg-white border border-border text-navy-900 rounded-bl-sm"
-                  }`}
-                >
-                  {m.content}
+            {messages.map((m, i) => {
+              const hasContactLink = m.role === "assistant" && m.content.includes(CONTACT_MARKER);
+              const displayContent = m.content.replace(CONTACT_MARKER, "").trim();
+              return (
+                <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                  <div className="max-w-[85%] flex flex-col gap-2">
+                    <div
+                      className={`text-sm px-3 py-2 rounded-xl leading-relaxed ${
+                        m.role === "user"
+                          ? "bg-nova-500 text-white rounded-br-sm"
+                          : "bg-white border border-border text-navy-900 rounded-bl-sm"
+                      }`}
+                    >
+                      {m.role === "user" ? (
+                        displayContent
+                      ) : (
+                        <div dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent) }} />
+                      )}
+                    </div>
+                    {hasContactLink && (
+                      <Link
+                        href="/contact"
+                        className="self-start text-xs font-semibold bg-nova-500 hover:bg-nova-400 text-white px-3 py-1.5 rounded-lg transition-colors"
+                        onClick={() => setOpen(false)}
+                      >
+                        Contact Security Team →
+                      </Link>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             {loading && (
               <div className="flex justify-start">
                 <div className="bg-white border border-border rounded-xl rounded-bl-sm px-3 py-2">

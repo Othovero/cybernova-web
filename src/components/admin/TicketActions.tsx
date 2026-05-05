@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 const STATUSES = ["Pending", "Assigned", "In Progress", "Resolved", "Archived"] as const;
 
@@ -27,11 +28,16 @@ export function TicketActions({ id, currentStatus }: Props) {
   async function update(status: string) {
     setLoading(true);
     setOpen(false);
-    await fetch(`/api/admin/tickets/${id}`, {
+    const res = await fetch(`/api/admin/tickets/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
+    if (res.ok) {
+      toast.success(`Ticket moved to ${status}`);
+    } else {
+      toast.error("Failed to update ticket status");
+    }
     router.refresh();
     setLoading(false);
   }

@@ -2,16 +2,22 @@
 
 import { useRouter } from "next/navigation";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { toast } from "sonner";
 
 export default function TestimonialActions({ id, status }: { id: string; status: string }) {
   const router = useRouter();
 
   async function update(newStatus: "Approved" | "Rejected") {
-    await fetch("/api/admin/testimonials", {
+    const res = await fetch("/api/admin/testimonials", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, status: newStatus }),
     });
+    if (res.ok) {
+      toast.success(newStatus === "Approved" ? "Testimonial approved" : "Testimonial rejected");
+    } else {
+      toast.error("Action failed — please try again");
+    }
     router.refresh();
   }
 
