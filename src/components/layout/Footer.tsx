@@ -65,8 +65,8 @@ export function Footer() {
         <Separator className="my-8 bg-white/10" />
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/40">
-          <p>© {new Date().getFullYear()} CyberNova Analytics Ltd. All rights reserved.</p>
-          <p>POPIA & GDPR compliant · Hosted on Vercel · Powered by Supabase</p>
+          <p>© {new Date().getFullYear()} CyberNova Analytics Ltd.</p>
+          <p>BY: Bakang Othovero Raditedu -BJ11DW</p>
         </div>
       </div>
     </footer>
