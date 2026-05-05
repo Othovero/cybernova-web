@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Menu, ShieldCheck } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminClock } from "@/components/admin/AdminClock";
 
 interface Props {
   children: React.ReactNode;
@@ -51,6 +52,7 @@ export function AdminShell({ children, userEmail }: Props) {
               <span className="hidden sm:inline">MFA Verified</span>
             </span>
           </p>
+          <AdminClock />
         </header>
         <main className="flex-1 p-4 sm:p-6 overflow-auto animate-enter">
           {children}

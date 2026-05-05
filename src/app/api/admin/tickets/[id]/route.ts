@@ -18,6 +18,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const updatePayload: Record<string, unknown> = {};
   if (status) updatePayload.status = status;
   if (assigned_to !== undefined) updatePayload.assigned_to = assigned_to || null;
+  if (Object.keys(updatePayload).length > 0) updatePayload.updated_at = new Date().toISOString();
 
   if (Object.keys(updatePayload).length > 0) {
     const { error } = await adminClient

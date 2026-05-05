@@ -66,8 +66,15 @@ export async function POST(req: NextRequest) {
   // AI summary (fire-and-forget — don't block the response)
   generateAiSummary(ticket.id, ticket.issue_type, ticket.description);
 
-  // Confirmation email
-  const trackUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/track/${ticket.tracking_token}`;
+  // Prefer a real site URL; fall back to Vercel's auto-set VERCEL_URL so the link
+  // is never localhost in production even if NEXT_PUBLIC_SITE_URL wasn't updated.
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes("localhost")
+      ? process.env.NEXT_PUBLIC_SITE_URL
+      : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000";
+  const trackUrl = `${siteUrl}/track/${ticket.tracking_token}`;
   await sendConfirmationEmail(body.email, body.full_name, ticket.ref, trackUrl, ticket.issue_type);
 
   return NextResponse.json({ ref: ticket.ref, tracking_token: ticket.tracking_token }, { status: 201 });
