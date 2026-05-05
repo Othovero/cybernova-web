@@ -98,7 +98,7 @@ export default function AdminLoginPage() {
             </div>
           </div>
           <h1 className="text-2xl font-bold text-navy-900">Admin Access</h1>
-          <p className="text-text-muted text-sm mt-1">CyberNova Analytics — Secure Portal</p>
+          <p className="text-text-muted text-sm mt-1">CyberNova Analytics Secure Portal</p>
         </div>
 
         <Card className="border-border shadow-sm">
@@ -192,8 +192,16 @@ export default function AdminLoginPage() {
         </Card>
 
         <p className="text-center text-xs text-text-muted mt-6">
-          Authorised personnel only. All access is logged.
+          All access is logged.
         </p>
+        <div className="text-center mt-3">
+          <a
+            href="/"
+            className="text-xs text-text-muted hover:text-nova-500 transition-colors inline-flex items-center gap-1"
+          >
+            ← Back to homepage
+          </a>
+        </div>
       </div>
     </div>
   );
