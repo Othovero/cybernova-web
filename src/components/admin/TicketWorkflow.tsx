@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, CheckCircle2, UserCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const STATUSES = ["Pending", "Assigned", "In Progress", "Resolved", "Archived"] as const;
 
@@ -41,17 +42,23 @@ export function TicketWorkflow({ ticketId, currentStatus, currentAssigned, profi
     body.assigned_to = assignedTo || null;
     if (note.trim()) body.note = note.trim();
 
-    await fetch(`/api/admin/tickets/${ticketId}`, {
+    const res = await fetch(`/api/admin/tickets/${ticketId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
 
-    setSaved(true);
-    setNote("");
-    setTimeout(() => setSaved(false), 2500);
     setLoading(false);
-    router.refresh();
+
+    if (res.ok) {
+      setSaved(true);
+      setNote("");
+      setTimeout(() => setSaved(false), 2500);
+      toast.success("Ticket updated successfully");
+      router.refresh();
+    } else {
+      toast.error("Failed to save changes");
+    }
   }
 
   return (

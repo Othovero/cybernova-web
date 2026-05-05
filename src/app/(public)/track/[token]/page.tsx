@@ -1,4 +1,5 @@
 import { adminClient } from "@/lib/supabase/admin";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 import { Badge } from "@/components/ui/badge";
@@ -16,13 +17,15 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export default async function TrackPage({ params }: { params: { token: string } }) {
+  noStore();
+
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuidRegex.test(params.token)) notFound();
 
   const { data: ticket } = await adminClient
     .from("tickets")
     .select(`
-      ref, status, issue_type, full_name, organisation, country,
+      id, ref, status, issue_type, full_name, organisation, country,
       created_at, updated_at, assigned_to,
       profiles:assigned_to ( full_name )
     `)
@@ -34,7 +37,7 @@ export default async function TrackPage({ params }: { params: { token: string } 
   const { data: history } = await adminClient
     .from("ticket_history")
     .select("status, note, created_at")
-    .eq("ticket_id", (await adminClient.from("tickets").select("id").eq("tracking_token", params.token).single()).data?.id)
+    .eq("ticket_id", ticket.id)
     .order("created_at", { ascending: true });
 
   const profilesRaw = ticket.profiles as unknown;
