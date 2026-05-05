@@ -66,7 +66,7 @@ export function Footer() {
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/40">
           <p>© {new Date().getFullYear()} CyberNova Analytics Ltd.</p>
-          <p>BY: Bakang Othovero Raditedu -BJ11DW</p>
+          <p>Bakang Othovero Raditedu -BJ11DW</p>
         </div>
       </div>
     </footer>
