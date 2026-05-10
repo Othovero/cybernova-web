@@ -6,12 +6,14 @@ import {
   PieChart, Pie, Legend,
 } from "recharts";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 import {
   Download, FileText, Loader2, X, ChevronRight, BarChart2, Globe,
   Copy, Check, FileDown,
 } from "lucide-react";
 
 export interface TicketRow {
+  id: string;
   ref: string;
   full_name: string;
   organisation: string;
@@ -469,7 +471,14 @@ export function AnalyticsDashboard({ tickets }: Props) {
             <tbody className="divide-y divide-border">
               {filtered.slice(0, 50).map((t) => (
                 <tr key={t.ref} className="hover:bg-surface/60 transition-colors">
-                  <td className="px-5 py-3 font-mono text-xs font-semibold text-navy-700">{t.ref}</td>
+                  <td className="px-5 py-3 font-mono text-xs font-semibold">
+                    <Link
+                      href={`/admin/tickets/${t.id}`}
+                      className="text-nova-500 hover:text-nova-400 hover:underline transition-colors"
+                    >
+                      {t.ref}
+                    </Link>
+                  </td>
                   <td className="px-5 py-3 text-navy-900 text-xs">{t.full_name}</td>
                   <td className="px-5 py-3 text-navy-900 text-xs">{t.organisation}</td>
                   <td className="px-5 py-3 text-xs">
