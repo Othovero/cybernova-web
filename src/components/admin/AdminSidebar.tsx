@@ -11,6 +11,7 @@ import {
   FileText,
   BarChart2,
   Star,
+  Users,
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
@@ -23,6 +24,7 @@ const NAV = [
   { label: "Blog",         href: "/admin/blog",         icon: FileText        },
   { label: "Testimonials", href: "/admin/testimonials", icon: Star            },
   { label: "Analytics",    href: "/admin/analytics",    icon: BarChart2       },
+  { label: "Team",         href: "/admin/team",         icon: Users           },
 ];
 
 export function AdminSidebar() {

@@ -23,6 +23,14 @@ export default function AdminLoginPage() {
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
 
+  function logAttempt(attemptEmail: string, success: boolean, reason?: string) {
+    fetch("/api/admin/audit/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: attemptEmail, success, reason }),
+    }).catch(() => {});
+  }
+
   async function handleCredentials(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -31,6 +39,7 @@ export default function AdminLoginPage() {
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
     if (signInError) {
+      logAttempt(email, false, "Invalid credentials");
       setError("Invalid email or password.");
       toast.error("Sign in failed");
       setLoading(false);
@@ -70,12 +79,14 @@ export default function AdminLoginPage() {
     });
 
     if (verifyError) {
+      logAttempt(email, false, "Invalid MFA code");
       setError("Invalid code. Please try again.");
       toast.error("Incorrect authentication code");
       setLoading(false);
       return;
     }
 
+    logAttempt(email, true);
     toast.success("Signed in successfully");
     router.push("/admin");
     router.refresh();
