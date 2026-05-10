@@ -29,6 +29,15 @@ const COUNTRIES = [
   "Mozambique", "Tanzania", "Malawi", "Lesotho", "Eswatini", "Other",
 ];
 
+const ALLOWED_TYPES = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "text/plain",
+  "image/png",
+  "image/jpeg",
+];
+
 interface FormData {
   full_name: string;
   email: string;
@@ -45,6 +54,7 @@ export default function ContactPage() {
     full_name: "", email: "", phone: "", organisation: "",
     country: "", job_title: "", issue_type: "", description: "",
   });
+  const [file, setFile]           = useState<File | null>(null);
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState("");
   const [success, setSuccess]     = useState<{ ref: string; token: string } | null>(null);
@@ -52,6 +62,15 @@ export default function ContactPage() {
 
   function set(field: keyof FormData, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = e.target.files?.[0] ?? null;
+    if (!selected) { setFile(null); return; }
+    if (selected.size > 10 * 1024 * 1024) { setError("File must be under 10 MB."); e.target.value = ""; return; }
+    if (!ALLOWED_TYPES.includes(selected.type)) { setError("Only PDF, Word, TXT, PNG, or JPG files are allowed."); e.target.value = ""; return; }
+    setError("");
+    setFile(selected);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -67,10 +86,14 @@ export default function ContactPage() {
 
     setLoading(true);
     try {
+      const fd = new FormData();
+      (Object.entries(form) as [string, string][]).forEach(([k, v]) => fd.append(k, v));
+      fd.append("captchaToken", captchaToken);
+      if (file) fd.append("file", file);
+
       const res = await fetch("/api/contact", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, captchaToken }),
+        body: fd,
       });
       const data = await res.json();
       if (!res.ok) {
@@ -138,7 +161,7 @@ export default function ContactPage() {
             <div className="space-y-6">
               {[
                 { icon: Clock,       title: "Response Time",     body: "Standard: within 2 hours. Active incident: immediate escalation to on-call SOC analyst." },
-                { icon: ShieldCheck, title: "Secure Handling",   body: "All submissions are encrypted in transit and stored with Supabase Row Level Security. Your data stays private." },
+                { icon: ShieldCheck, title: "Secure Handling",   body: "All submissions are encrypted in transit, your data stays private." },
                 { icon: Globe,       title: "Regional Coverage", body: "We operate across Botswana, Namibia, Zimbabwe, Zambia, Mozambique, and South Africa." },
               ].map(({ icon: Icon, title, body }) => (
                 <div key={title} className="flex gap-4">
@@ -210,6 +233,25 @@ export default function ContactPage() {
                       placeholder="Describe the security issue, incident, or service you need."
                       rows={5}
                     />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="file">
+                      Supporting Document
+                      <span className="text-text-muted text-xs font-normal ml-1">(optional — PDF, Word, TXT, PNG, JPG · max 10 MB)</span>
+                    </Label>
+                    <input
+                      id="file"
+                      type="file"
+                      accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
+                      onChange={handleFileChange}
+                      className="block w-full text-sm text-text-muted border border-border rounded-lg cursor-pointer bg-white px-3 py-2 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-nova-100 file:text-nova-500 hover:file:bg-nova-500 hover:file:text-white file:transition-colors"
+                    />
+                    {file && (
+                      <p className="text-xs text-secure flex items-center gap-1">
+                        <CheckCircle2 size={12} /> {file.name} ({(file.size / 1024).toFixed(0)} KB)
+                      </p>
+                    )}
                   </div>
 
                   <TurnstileWidget

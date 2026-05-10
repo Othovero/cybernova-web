@@ -18,8 +18,35 @@ async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
   return data.success === true;
 }
 
+const ALLOWED_MIME = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "text/plain",
+  "image/png",
+  "image/jpeg",
+];
+
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  const formData = await req.formData();
+
+  const getString = (key: string) => {
+    const v = formData.get(key);
+    return typeof v === "string" ? v : "";
+  };
+  const body: Record<string, string> = {
+    full_name:    getString("full_name"),
+    email:        getString("email"),
+    phone:        getString("phone"),
+    organisation: getString("organisation"),
+    country:      getString("country"),
+    job_title:    getString("job_title"),
+    issue_type:   getString("issue_type"),
+    description:  getString("description"),
+    captchaToken: getString("captchaToken"),
+  };
+  const fileEntry = formData.get("file");
+  const uploadedFile = fileEntry instanceof File && fileEntry.size > 0 ? fileEntry : null;
 
   // Turnstile verification
   const ip = req.headers.get("cf-connecting-ip") ?? req.headers.get("x-forwarded-for") ?? "";
@@ -37,6 +64,15 @@ export async function POST(req: NextRequest) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(body.email)) {
     return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
+  }
+
+  if (uploadedFile) {
+    if (uploadedFile.size > 10 * 1024 * 1024) {
+      return NextResponse.json({ error: "File must be under 10 MB." }, { status: 400 });
+    }
+    if (!ALLOWED_MIME.includes(uploadedFile.type)) {
+      return NextResponse.json({ error: "Invalid file type." }, { status: 400 });
+    }
   }
 
   const sanitise = (v: unknown) => typeof v === "string" ? v.slice(0, 2000).trim() : "";
@@ -61,6 +97,25 @@ export async function POST(req: NextRequest) {
   if (error || !ticket) {
     console.error("Ticket insert error:", error);
     return NextResponse.json({ error: "Failed to create ticket" }, { status: 500 });
+  }
+
+  // Upload attachment if present
+  if (uploadedFile) {
+    try {
+      const ext = uploadedFile.name.split(".").pop() ?? "bin";
+      const storagePath = `${ticket.id}/${Date.now()}.${ext}`;
+      const buffer = Buffer.from(await uploadedFile.arrayBuffer());
+      const { error: storageErr } = await adminClient.storage
+        .from("ticket-attachments")
+        .upload(storagePath, buffer, { contentType: uploadedFile.type });
+      if (!storageErr) {
+        await adminClient.from("tickets").update({ attachment_path: storagePath }).eq("id", ticket.id);
+      } else {
+        console.error("Storage upload error:", storageErr);
+      }
+    } catch (err) {
+      console.error("File upload error:", err);
+    }
   }
 
   // AI summary (fire-and-forget — don't block the response)
