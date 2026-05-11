@@ -11,7 +11,6 @@ const CASE_STUDIES = [
     problem: "A mid-sized bank detected encrypted files spreading across 40 endpoints at 2 AM.",
     solution: "CyberNova's SOC isolated affected segments within 8 minutes and deployed forensic tools.",
     outcome: "Zero data exfiltration. Full operations restored within 6 hours. Zero ransom paid.",
-    href: "/case-studies/ransomware-containment",
   },
   {
     tag: "Government",
@@ -20,7 +19,6 @@ const CASE_STUDIES = [
     problem: "A government ministry's citizen portal faced persistent SQL injection probing.",
     solution: "Deployed WAF rules, re-architected API layer, and conducted full security audit.",
     outcome: "Attacks dropped 99.7%. Portal achieved ISO 27001-aligned security posture.",
-    href: "/case-studies/egovernment-portal",
   },
   {
     tag: "SME",
@@ -29,7 +27,6 @@ const CASE_STUDIES = [
     problem: "Staff at a logistics company clicked a spoofed invoice link, compromising credentials.",
     solution: "Immediate credential reset, email gateway hardening, and staff phishing simulation.",
     outcome: "Zero repeat incidents over 12 months. Security awareness score up 84%.",
-    href: "/case-studies/phishing-logistics",
   },
 ];
 
@@ -74,12 +71,6 @@ export function CaseStudiesTeaser() {
                     <p className="text-text-muted mt-1">{cs.outcome}</p>
                   </div>
                 </div>
-                <Link
-                  href={cs.href}
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-nova-500 hover:text-nova-400 transition-colors mt-6"
-                >
-                  Read full study <ArrowRight size={14} />
-                </Link>
               </CardContent>
             </Card>
           ))}

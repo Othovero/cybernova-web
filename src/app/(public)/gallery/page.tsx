@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CircuitPattern } from "@/components/ui/CircuitPattern";
@@ -22,9 +23,15 @@ const TAG_COLORS: Record<string, string> = {
 function EventCard({ event }: { event: typeof EVENTS[number] }) {
   return (
     <div className="bg-white border border-border rounded-xl overflow-hidden hover:shadow-md transition-shadow">
-      {/* Placeholder image area */}
-      <div className="bg-gradient-to-br from-navy-900 to-navy-700 h-44 flex items-center justify-center">
-        <div className="text-center">
+      <div className="bg-gradient-to-br from-navy-900 to-navy-700 h-44 relative flex items-center justify-center overflow-hidden">
+        <Image
+          src="/logotransparent.png"
+          alt=""
+          width={200}
+          height={109}
+          className="absolute opacity-[0.12] object-contain select-none pointer-events-none"
+        />
+        <div className="relative text-center">
           <p className="text-white/40 text-xs tracking-widest uppercase mb-1">Photos</p>
           <p className="text-nova-400 font-bold text-2xl">{event.count}</p>
           <p className="text-white/40 text-xs">images</p>
