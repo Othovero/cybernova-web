@@ -54,14 +54,50 @@ export default function ContactPage() {
     full_name: "", email: "", phone: "", organisation: "",
     country: "", job_title: "", issue_type: "", description: "",
   });
-  const [file, setFile]           = useState<File | null>(null);
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState("");
-  const [success, setSuccess]     = useState<{ ref: string; token: string } | null>(null);
+  const [file, setFile]               = useState<File | null>(null);
+  const [loading, setLoading]         = useState(false);
+  const [error, setError]             = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+  const [success, setSuccess]         = useState<{ ref: string; token: string } | null>(null);
   const [captchaToken, setCaptchaToken] = useState("");
 
   function set(field: keyof FormData, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
+    if (fieldErrors[field]) setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+  }
+
+  function validate(): boolean {
+    const errs: Partial<Record<keyof FormData, string>> = {};
+
+    if (!form.full_name.trim())
+      errs.full_name = "Full name is required.";
+    else if (!/^[A-Za-z\s'\-.]+$/.test(form.full_name.trim()))
+      errs.full_name = "Name may only contain letters, spaces, hyphens, and apostrophes.";
+
+    if (!form.email.trim())
+      errs.email = "Email address is required.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
+      errs.email = "Enter a valid email address.";
+
+    if (form.phone.trim() && !/^[+\d\s()\-]{7,20}$/.test(form.phone.trim()))
+      errs.phone = "Enter a valid phone number (digits, spaces, + and dashes only).";
+
+    if (!form.organisation.trim())
+      errs.organisation = "Organisation is required.";
+
+    if (!form.country)
+      errs.country = "Please select a country.";
+
+    if (!form.issue_type)
+      errs.issue_type = "Please select an issue type.";
+
+    if (!form.description.trim())
+      errs.description = "Please describe your issue.";
+    else if (form.description.trim().length < 20)
+      errs.description = "Please provide at least 20 characters.";
+
+    setFieldErrors(errs);
+    return Object.keys(errs).length === 0;
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -77,10 +113,7 @@ export default function ContactPage() {
     e.preventDefault();
     setError("");
 
-    const required: (keyof FormData)[] = ["full_name", "email", "organisation", "country", "issue_type", "description"];
-    for (const f of required) {
-      if (!form[f].trim()) { setError(`Please fill in all required fields.`); return; }
-    }
+    if (!validate()) return;
 
     if (!captchaToken) { setError("Please complete the security check."); return; }
 
@@ -189,26 +222,59 @@ export default function ContactPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label htmlFor="name">Full Name <span className="text-threat">*</span></Label>
-                      <Input id="name" value={form.full_name} onChange={(e) => set("full_name", e.target.value)} placeholder="Thabo Modise" />
+                      <Input
+                        id="name"
+                        value={form.full_name}
+                        onChange={(e) => set("full_name", e.target.value)}
+                        placeholder="Thabo Modise"
+                        className={fieldErrors.full_name ? "border-threat focus-visible:ring-threat/30" : ""}
+                      />
+                      {fieldErrors.full_name && <p className="text-xs text-threat">{fieldErrors.full_name}</p>}
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="email">Email Address <span className="text-threat">*</span></Label>
-                      <Input id="email" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="thabo@organisation.bw" />
+                      <Input
+                        id="email"
+                        type="email"
+                        value={form.email}
+                        onChange={(e) => set("email", e.target.value)}
+                        placeholder="thabo@organisation.bw"
+                        className={fieldErrors.email ? "border-threat focus-visible:ring-threat/30" : ""}
+                      />
+                      {fieldErrors.email && <p className="text-xs text-threat">{fieldErrors.email}</p>}
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="phone">Phone Number</Label>
-                      <Input id="phone" type="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="+267 71 234 567" />
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={form.phone}
+                        onChange={(e) => set("phone", e.target.value)}
+                        placeholder="+267 71 234 567"
+                        className={fieldErrors.phone ? "border-threat focus-visible:ring-threat/30" : ""}
+                      />
+                      {fieldErrors.phone && <p className="text-xs text-threat">{fieldErrors.phone}</p>}
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="org">Organisation <span className="text-threat">*</span></Label>
-                      <Input id="org" value={form.organisation} onChange={(e) => set("organisation", e.target.value)} placeholder="Ministry of Finance" />
+                      <Input
+                        id="org"
+                        value={form.organisation}
+                        onChange={(e) => set("organisation", e.target.value)}
+                        placeholder="Ministry of Finance"
+                        className={fieldErrors.organisation ? "border-threat focus-visible:ring-threat/30" : ""}
+                      />
+                      {fieldErrors.organisation && <p className="text-xs text-threat">{fieldErrors.organisation}</p>}
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="country">Country <span className="text-threat">*</span></Label>
                       <Select onValueChange={(v) => set("country", String(v))}>
-                        <SelectTrigger id="country"><SelectValue placeholder="Select country" /></SelectTrigger>
+                        <SelectTrigger id="country" className={fieldErrors.country ? "border-threat focus:ring-threat/30" : ""}>
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
                         <SelectContent>{COUNTRIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                       </Select>
+                      {fieldErrors.country && <p className="text-xs text-threat">{fieldErrors.country}</p>}
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="jobtitle">Job Title</Label>
@@ -219,9 +285,12 @@ export default function ContactPage() {
                   <div className="space-y-1.5">
                     <Label htmlFor="issuetype">Issue Type <span className="text-threat">*</span></Label>
                     <Select onValueChange={(v) => set("issue_type", String(v))}>
-                      <SelectTrigger id="issuetype"><SelectValue placeholder="Select issue type" /></SelectTrigger>
+                      <SelectTrigger id="issuetype" className={fieldErrors.issue_type ? "border-threat focus:ring-threat/30" : ""}>
+                        <SelectValue placeholder="Select issue type" />
+                      </SelectTrigger>
                       <SelectContent>{ISSUE_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                     </Select>
+                    {fieldErrors.issue_type && <p className="text-xs text-threat">{fieldErrors.issue_type}</p>}
                   </div>
 
                   <div className="space-y-1.5">
@@ -232,7 +301,9 @@ export default function ContactPage() {
                       onChange={(e) => set("description", e.target.value)}
                       placeholder="Describe the security issue, incident, or service you need."
                       rows={5}
+                      className={fieldErrors.description ? "border-threat focus-visible:ring-threat/30" : ""}
                     />
+                    {fieldErrors.description && <p className="text-xs text-threat">{fieldErrors.description}</p>}
                   </div>
 
                   <div className="space-y-1.5">
