@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
       ? `https://${process.env.VERCEL_URL}`
       : "http://localhost:3000";
   const trackUrl = `${siteUrl}/track/${ticket.tracking_token}`;
-  await sendConfirmationEmail(body.email, body.full_name, ticket.ref, trackUrl, ticket.issue_type);
+  await sendConfirmationEmail(body.email, body.full_name, ticket.ref, trackUrl, ticket.issue_type, ticket.description);
 
   return NextResponse.json({ ref: ticket.ref, tracking_token: ticket.tracking_token }, { status: 201 });
 }
@@ -176,7 +176,8 @@ async function sendConfirmationEmail(
   name: string,
   ref: string,
   trackUrl: string,
-  issueType: string
+  issueType: string,
+  description: string
 ) {
   if (!process.env.RESEND_API_KEY) return;
   try {
@@ -194,6 +195,8 @@ async function sendConfirmationEmail(
             <p style="margin:0 0 16px">Hi ${name},</p>
             <p>Your security request has been received and assigned reference <strong>${ref}</strong>.</p>
             <p><strong>Issue type:</strong> ${issueType}</p>
+            <p style="margin:0 0 8px"><strong>Your description:</strong></p>
+            <p style="background:#E8F0FE;border-left:3px solid #005CE6;padding:12px 16px;border-radius:4px;font-size:14px;color:#1A3560;white-space:pre-wrap">${description}</p>
             <p>Our team will respond within <strong>2 hours</strong>. Active incidents receive immediate escalation.</p>
             <p style="margin:24px 0">
               <a href="${trackUrl}" style="background:#005CE6;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600">

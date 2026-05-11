@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ShieldCheck, Clock, User, AlertTriangle } from "lucide-react";
+import { ShieldCheck, Clock, User, AlertTriangle, Sparkles } from "lucide-react";
 import { notFound } from "next/navigation";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -26,7 +26,7 @@ export default async function TrackPage({ params }: { params: { token: string } 
     .from("tickets")
     .select(`
       id, ref, status, issue_type, full_name, organisation, country,
-      created_at, updated_at, assigned_to,
+      created_at, updated_at, assigned_to, ai_summary,
       profiles:assigned_to ( full_name )
     `)
     .eq("tracking_token", params.token)
@@ -92,6 +92,19 @@ export default async function TrackPage({ params }: { params: { token: string } 
                 <p className="font-semibold text-navy-900">{assignedName}</p>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border mb-6">
+          <CardContent className="pt-6">
+            <h2 className="text-sm font-bold text-navy-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <Sparkles size={14} className="text-nova-500" /> AI Security Summary
+            </h2>
+            {ticket.ai_summary ? (
+              <p className="text-sm text-navy-900 leading-relaxed">{ticket.ai_summary}</p>
+            ) : (
+              <p className="text-sm text-text-muted italic">Summary is being generated — check back shortly.</p>
+            )}
           </CardContent>
         </Card>
 
