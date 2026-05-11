@@ -29,7 +29,7 @@ function EventCard({ event }: { event: typeof EVENTS[number] }) {
           alt=""
           width={200}
           height={109}
-          className="absolute opacity-[0.12] object-contain select-none pointer-events-none"
+          className="absolute opacity-30 object-contain select-none pointer-events-none"
         />
         <div className="relative text-center">
           <p className="text-white/40 text-xs tracking-widest uppercase mb-1">Photos</p>

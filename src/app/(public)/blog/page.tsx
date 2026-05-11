@@ -18,7 +18,7 @@ const TAG_COLORS: Record<string, string> = {
   "Awareness":          "bg-secure/10 text-secure",
 };
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function BlogPage() {
   const { data: posts } = await supabase
