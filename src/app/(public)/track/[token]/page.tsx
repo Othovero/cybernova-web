@@ -1,6 +1,6 @@
 import { adminClient } from "@/lib/supabase/admin";
 import { unstable_noStore as noStore } from "next/cache";
-import { AiSummaryRefresher } from "./AiSummaryRefresher";
+import { AiSummaryButton } from "./AiSummaryButton";
 
 export const dynamic = "force-dynamic";
 import { Badge } from "@/components/ui/badge";
@@ -104,10 +104,7 @@ export default async function TrackPage({ params }: { params: { token: string } 
             {ticket.ai_summary ? (
               <p className="text-sm text-navy-900 leading-relaxed">{ticket.ai_summary}</p>
             ) : (
-              <>
-                <p className="text-sm text-text-muted italic">Summary is being generated — this page will refresh automatically.</p>
-                <AiSummaryRefresher />
-              </>
+              <AiSummaryButton token={params.token} />
             )}
           </CardContent>
         </Card>
